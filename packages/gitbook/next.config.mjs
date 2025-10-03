@@ -1,6 +1,9 @@
 // next.config.mjs
 // @ts-check
+import path from 'path';
+import { fileURLToPath } from 'url';
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 /** @type {import('next').NextConfig} */
 const DOCS_ORIGIN = process.env.DOCS_ORIGIN ?? 'https://gitbook.com';
 
@@ -53,13 +56,21 @@ const nextConfig = {
 
   async rewrites() {
     return [
-      // 🔁 /docs → proxy ke GitBook (URL di browser tetap /docs)
       { source: '/docs', destination: `${DOCS_ORIGIN}/docs` },
       { source: '/docs/:path*', destination: `${DOCS_ORIGIN}/docs/:path*` },
-
-      // 🔁 Proxy aset GitBook biar ikon/css/skrip nggak 404
       { source: '/~gitbook/:path*', destination: `${DOCS_ORIGIN}/~gitbook/:path*` },
     ];
+  },
+
+  webpack: (config) => {
+    config.resolve.alias = {
+      ...(config.resolve.alias ?? {}),
+      // TS icon components
+      '@gitbook/icons': path.resolve(__dirname, 'src/lib/shims/icons.tsx'),
+      // CSS for icons
+      '@gitbook/icons/style.css': path.resolve(__dirname, 'src/lib/shims/icons.css'),
+    };
+    return config;
   },
 };
 
