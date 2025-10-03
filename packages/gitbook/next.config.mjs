@@ -2,6 +2,8 @@
 // @ts-check
 
 /** @type {import('next').NextConfig} */
+const DOCS_ORIGIN = process.env.DOCS_ORIGIN ?? 'https://gitbook.com';
+
 const nextConfig = {
   experimental: {
     authInterrupts: true,
@@ -46,6 +48,17 @@ const nextConfig = {
           { key: 'Access-Control-Allow-Origin', value: '*' },
         ],
       },
+    ];
+  },
+
+  async rewrites() {
+    return [
+      // 🔁 /docs → proxy ke GitBook (URL di browser tetap /docs)
+      { source: '/docs', destination: `${DOCS_ORIGIN}/docs` },
+      { source: '/docs/:path*', destination: `${DOCS_ORIGIN}/docs/:path*` },
+
+      // 🔁 Proxy aset GitBook biar ikon/css/skrip nggak 404
+      { source: '/~gitbook/:path*', destination: `${DOCS_ORIGIN}/~gitbook/:path*` },
     ];
   },
 };
